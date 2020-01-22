@@ -1,3 +1,4 @@
+https://blogs.sap.com/2017/09/05/dynamic-programming-in-abap-part-1-introduction-to-field-symbols/
 
 ***** Variant-1 Typed field symbol can be declared as************
 DATA: var TYPE i VALUE 2.
