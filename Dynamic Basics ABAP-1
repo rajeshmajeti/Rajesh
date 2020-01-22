@@ -1,0 +1,106 @@
+
+***** Variant-1 Typed field symbol can be declared as************
+DATA: var TYPE i VALUE 2.
+FIELD-SYMBOLS: <fs_num> TYPE i.
+ASSIGN var TO <fs_num>.
+WRITE: / <fs_num>.
+<fs_num> = 4.
+WRITE: / var.
+****Typed field symbols can point to the data objects of specified type only.
+After assigning a data object to a field symbol, if we make any changes to the field symbol value, then the value of corresponding data object is also updated
+
+
+*********** Variant-2 Field symbol as a replacement of Work area*******
+DATA: lt_mara TYPE STANDARD TABLE OF mara.
+FIELD-SYMBOLS: <fs_mara> TYPE mara.
+SELECT * FROM mara INTO TABLE lt_mara UP TO 10 ROWS.
+LOOP AT lt_mara ASSIGNING <fs_mara>.
+  <fs_mara>-matkl = 'DEMO'.
+ENDLOOP.
+***If we change any field of structure in field symbol, the corresponding field in internal will get updated. We don’t need to write the MODIFY statement which we would have written if we had used work area. This is because work area stores a copy of the internal table row, whereas field symbol directly references the internal table row.
+Hence processing of internal table with field symbol is faster than the processing of internal table with work area.
+
+
+************** Variant-3 Appending to Internal Table**********
+DATA: lt_mara TYPE STANDARD TABLE OF mara.
+FIELD-SYMBOLS: <fs_mara> TYPE mara.
+
+APPEND INITIAL LINE TO lt_mara ASSIGNING <fs_mara>.
+IF <fs_mara> IS ASSIGNED.
+  <fs_mara>-matnr = 'MAT1'.
+  <fs_mara>-matkl = '001'.
+  UNASSIGN <fs_mara>.
+ENDIF.
+
+APPEND INITIAL LINE TO lt_mara ASSIGNING <fs_mara>.
+IF <fs_mara> IS ASSIGNED.
+  <fs_mara>-matnr = 'MAT2'.
+  <fs_mara>-matkl = '001'.
+  UNASSIGN <fs_mara>.
+ENDIF.
+**** Note :Always perform a check on field symbol that if it is assigned before doing any operation to avoid short dump. Also after doing the operation, unassign the field symbol
+*** Variant 4 Reading Internal Table
+READ TABLE lt_mara ASSIGNING <fs_mara> WITH KEY matnr = 'MAT1'.
+
+****** variant 5 Generic Field Symbol
+FIELD-SYMBOLS: <fs_str> TYPE ANY.
+FIELD-SYMBOLS: <fs_tab> TYPE ANY TABLE.
+******* Variant 5.1  Type Any******
+FIELD-SYMBOLS: <fs_str> TYPE ANY.
+FIELD-SYMBOLS: <fs_data> TYPE ANY.
+DATA: lw_mara TYPE mara.
+
+ASSIGN lw_mara TO <fs_str>.
+IF <fs_str> IS ASSIGNED.
+  ASSIGN COMPONENT 'MATNR' OF STRUCTURE <fs_str> TO <fs_data>.
+  IF <fs_data> IS ASSIGNED.
+    <fs_data> = 'MAT001'.
+    UNASSIGN <fs_data>.
+  ENDIF.
+  UNASSIGN <fs_str>.
+ENDIF.
+*****After assigning lw_mara to <fs_str>, we cannot directly use the ‘-‘ operator on field symbol to access the fields of MARA structure i.e. <fs_str>-matnr would produce syntax error. This is because the field symbol type is declared only at runtime not at compile time.
+So to access the matnr field with field symbol, first we need to assign that field component to a different field symbol and then use the new field symbol to update the matnr field as show in above code snippet.
+After execution of above code snippet, the value of lw_mara-matnr would be MAT001.
+
+
+********Varaint 5.2 Type Any table**********
+FIELD-SYMBOLS: <fs_tab> TYPE ANY TABLE.
+FIELD-SYMBOLS: <fs_str> TYPE any.
+FIELD-SYMBOLS: <fs_data> TYPE any.
+DATA: lt_mara TYPE STANDARD TABLE OF mara.
+DATA: lw_mara TYPE mara.
+
+ASSIGN lt_mara TO <fs_tab>.
+SELECT * FROM mara INTO TABLE lt_mara UP TO 10 ROWS.
+
+LOOP AT <fs_tab> ASSIGNING <fs_str>.
+  IF <fs_str> IS ASSIGNED.
+    ASSIGN COMPONENT 'MATKL' OF STRUCTURE <fs_str> TO <fs_data>.
+    IF <fs_data> IS ASSIGNED.
+      IF <fs_data> EQ '01'.
+*********** Do some processing *********
+      ENDIF.
+      UNASSIGN <fs_data>.
+    ENDIF.
+  ENDIF.
+ENDLOOP.
+
+******** Variant 5.3  Reading Internal Table using Generic Field Symbol*****
+IELD-SYMBOLS: <fs_tab> TYPE ANY TABLE.
+FIELD-SYMBOLS: <fs_str> TYPE any.
+DATA: lt_mara TYPE STANDARD TABLE OF mara.
+
+ASSIGN lt_mara TO <fs_tab>.
+SELECT * FROM mara INTO TABLE lt_mara UP TO 10 ROWS.
+
+READ TABLE <fs_tab> ASSIGNING <fs_str> WITH KEY ('MATNR') = 'MAT001'.
+****8Since <fs_tab> is a generic field symbol, its type will be known only at runtime, hence we cannot directly write the fields of MARA structure after WITH KEY, instead we have to write the field name within parenthesis as shown above.
+In ABAP, this parenthesis indicates the compiler that the value of the operand will be decided at runtime, hence we don’t get any compilation error.
+
+
+
+
+
+
+
