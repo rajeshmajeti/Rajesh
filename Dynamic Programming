@@ -35,3 +35,38 @@ SELECT * FROM mara INTO TABLE lt_mara UP TO 10 ROWS.
 LOOP AT lt_mara REFERENCE INTO lr_mara.
   WRITE: / lr_mara->matnr.
 ENDLOOP.
+
+***** Variant 5 Generic Data Reference********
+DATA: lr_num TYPE REF TO data.
+FIELD-SYMBOLS: <num> TYPE any.
+CREATE DATA lr_num TYPE i.
+ASSIGN lr_num->* TO <num>.
+<num> = 3.
+write : / <num>.
+
+CREATE DATA lr_num TYPE c LENGTH 20.
+ASSIGN lr_num->* TO <num>.
+<num> =  'abd'.
+write : /  <num> centered.
+**After ASSIGN statement you should check sy-subrc If field symbol assignment is successful, sy-subrc will be 0 otherwise it will be 4.
+***** Variant 6 Working with Structures************
+DATA: lr_str TYPE REF TO data.
+FIELD-SYMBOLS: <str> TYPE any.
+FIELD-SYMBOLS: <data> TYPE any.
+CREATE DATA lr_str TYPE mara.
+
+ASSIGN lr_str->* TO <str>.
+ASSIGN COMPONENT 'MATNR' OF STRUCTURE <str> TO <data>.
+<data> = '112'.
+******* Variant 7 Dynamically Create Data Objects
+PARAMETERS: p_tname TYPE tabname.
+DATA: lr_tab TYPE REF TO data.
+FIELD-SYMBOLS: <tab> TYPE ANY TABLE.
+
+CREATE DATA lr_tab TYPE TABLE OF (p_tname).
+ASSIGN lr_tab->* TO <tab>.
+IF sy-subrc EQ 0.
+  SELECT * FROM (p_tname) INTO TABLE <tab> UP TO 10 ROWS.
+  cl_demo_output=>display( <tab> ).
+ENDIF.
+
