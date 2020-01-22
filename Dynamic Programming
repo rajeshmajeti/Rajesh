@@ -1,3 +1,12 @@
+*** Variant-1 Typed Data Reference***
+DATA lr_num TYPE REF TO i.
+CREATE DATA lr_num " or
+lr_num = NEW #( ).
+lr_num->* = 2.
+WRITE: / lr_num->*.
+
+
+***** Variant 2 Assigning the existing Data object to Reference
 DATA: lv_num TYPE i VALUE 2.
 DATA: lr_num TYPE REF TO i.
 
@@ -5,3 +14,24 @@ DATA: lr_num TYPE REF TO i.
 lr_num = REF #( lv_num ).
 lr_num->* = 4.
 WRITE: / lr_num->*,lv_num.
+
+
+
+****** Variant 3  Working with Structures*****
+DATA: lr_mara TYPE REF TO mara.
+
+CREATE DATA lr_mara.
+lr_mara->matnr = '1111'.
+lr_mara->matkl = '03'.
+
+***Here individual components of the structure can be accessed with -> operator on data reference variable.
+
+******* Variant 4 Working with Internal Tables*******
+DATA: lr_mara TYPE REF TO mara.
+DATA: lt_mara TYPE TABLE OF mara.
+
+SELECT * FROM mara INTO TABLE lt_mara UP TO 10 ROWS.
+
+LOOP AT lt_mara REFERENCE INTO lr_mara.
+  WRITE: / lr_mara->matnr.
+ENDLOOP.
