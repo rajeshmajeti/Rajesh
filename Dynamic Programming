@@ -1,0 +1,7 @@
+DATA: lv_num TYPE i VALUE 2.
+DATA: lr_num TYPE REF TO i.
+
+*GET REFERENCE OF lv_num INTO lr_num." or
+lr_num = REF #( lv_num ).
+lr_num->* = 4.
+WRITE: / lr_num->*,lv_num.
