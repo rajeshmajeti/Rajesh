@@ -1,0 +1,11 @@
+**** In Line Declaration and Field Symbol
+
+SELECT * FROM mara
+          INTO TABLE @DATA(lt_mara)
+          UP TO 10 ROWS.
+
+ LOOP  AT lt_mara ASSIGNING FIELD-SYMBOL(<fs_mara>).
+
+   WRITE: / <fs_mara>-matnr.
+
+ ENDLOOP.
